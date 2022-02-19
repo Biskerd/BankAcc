@@ -1,0 +1,178 @@
+import BankAk.Cart;
+import BankAk.Depozit;
+
+public class Loader
+{
+    public static void main(String[] args) {
+        Cart cart1 = new Cart(1, 1150);
+
+        cart1.inBankOperation(100);
+        System.out.println("На карте: " + cart1.getBalancAcc());
+        cart1.outBankOperation(100);
+
+        Depozit dep = new Depozit(2, 150);
+        dep.inBankOperation(150);
+        dep.outBankOperation(100);
+        System.out.println(cart1.balancAcc);
+
+        System.out.println(cart1.send(dep,100));
+        
+    }
+}
+
+
+
+
+package BankAk;
+
+public class BankAccount {
+    public int numAcc;
+    public int balancAcc;
+    public int lastOperation;
+
+    public BankAccount(int numAcc, int balancAcc) {
+        this.numAcc = numAcc;
+        this.balancAcc = balancAcc;
+    }
+
+    public int getNumAcc() {
+        return numAcc;
+    }
+
+    public void setNumAcc(int numAcc) {
+        this.numAcc = numAcc;
+    }
+
+    public int getBalancAcc() {
+        return balancAcc;
+    }
+
+    public void setBalancAcc(int balancAcc) {
+        this.balancAcc = balancAcc;
+    }
+
+
+    public int outBankOperation(int operation){
+        if ((balancAcc - operation) >= 0){
+            balancAcc -= operation;
+        } else {
+            System.out.println("Недостаточно средств");
+        }
+        return balancAcc;
+    }
+
+    public int inBankOperation(int operation) {
+        balancAcc += operation;
+        return balancAcc;
+    }
+
+    public boolean send (BankAccount receiver, int amount) {
+        if (balancAcc >= amount){
+            balancAcc -= amount;
+            receiver.balancAcc += amount;
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+
+package BankAk;
+
+public class Depozit extends BankAccount{
+    long times = 0;
+
+    public long getTimes() {
+        return times;
+    }
+
+    public Depozit(int numAcc, int balancAcc) {
+        super(numAcc, balancAcc);
+    }
+
+    @Override
+    public int outBankOperation(int operation) {
+        long timesOut = System.currentTimeMillis();
+        System.out.println("Операция по выводу с депозита.....");
+        long prom = (times - timesOut) / 36000000;
+        long prom1 = prom / (24 * 30);
+        if(
+                ((balancAcc - (operation + operation *0.01)) >= 0)
+        &&
+        (prom1 >= 1))
+        {
+            balancAcc -= operation ;
+            System.out.println("Остаток на балансе: " + balancAcc);
+        } else {
+            System.out.println("Прошло слишком мало времени с последнего взноса");
+        }
+        return balancAcc;
+    }
+
+    @Override
+    public int inBankOperation(int operation) {
+        times = System.currentTimeMillis();
+        balancAcc += operation;
+        return balancAcc;
+    }
+
+    @Override
+    public boolean send(BankAccount receiver, int amount) {
+        long timesOut = System.currentTimeMillis();
+        long prom = (times - timesOut) / 36000000;
+        long prom1 = prom / (24 * 30);
+        if ((balancAcc >= amount)
+        &&
+        (prom1 >= 1))
+        {
+            balancAcc -= amount;
+            receiver.balancAcc += amount;
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+
+
+package BankAk;
+
+public class Cart extends BankAccount{
+    public Cart(int numAcc, int balancAcc) {
+        super(numAcc, balancAcc);
+    }
+
+    @Override
+    public int outBankOperation(int operation) {
+        System.out.println("Операция с комиссией на вывод с карты 1%......");
+        if ((balancAcc - (operation + operation *0.01)) >= 0){
+            balancAcc -= (operation + operation *0.01);
+            System.out.println("Остаток на балансе: " + balancAcc);
+        } else {
+            System.out.println("Недостаточно средств для вывода с карты");
+        }
+        return balancAcc;
+    }
+
+    @Override
+    public boolean send(BankAccount receiver, int amount) {
+        if (balancAcc >= amount + amount*0.01){
+            balancAcc -= amount + amount*0.01;
+            receiver.balancAcc += amount + amount*0.01;
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
